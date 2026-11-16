@@ -18,6 +18,26 @@ void Cartridge::header_parser(std::vector<u8> &rombuf) {
     this->prg_rom.resize(rombuf[4] * 16384);
     this->chr_rom.resize(rombuf[5] * 8192);
   }
+
+  uint8_t l_nibble_mapper = (rombuf[6] >> 4) & 0xF;
+  uint8_t alt_nameout = (rombuf[6] >> 3) & 0x1;
+  uint8_t byte_trainer = (rombuf[6] >> 2) & 0x1;
+  uint8_t bat = (rombuf[6] >> 1) & 0x1;
+  uint8_t nametable = rombuf[6] & 0x1;
+
+  uint8_t h_nibble_mapper = (rombuf[7] >> 4) & 0xF;
+  uint8_t nes_2 = (rombuf[7] >> 2) & 0x3;
+  if (nes_2 == 2) {
+    this->is_nes2 = true;
+  } else {
+    this->is_nes2 = false;
+  }
+  uint16_t s_prg_ram;
+
+  // Full nibble_mapper
+  this->mapper_id = (h_nibble_mapper << 4) | l_nibble_mapper;
+
+  // Fill header with first 16 bytes
   std::copy_n(rombuf.begin(), this->header.size(), this->header.begin());
 }
 
@@ -51,7 +71,10 @@ void Cartridge::nes_parser(std::vector<u8> &rombuf, std::size_t filesize) {
       16 + this->prg_rom.size() + this->chr_rom.size();
 
   if (filesize == expectedSize_NoTrainer + 512) {
-  }
+    this->trainer.resize(512);
+  } // Trainer not present if not resized
+
+  std::copy_n(rombuf.begin() + 528, prg_rom.size(), this->prg_rom.begin());
 }
 
 const bool Cartridge::cartridge_init(const char *ines_path) {

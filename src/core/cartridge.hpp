@@ -11,8 +11,10 @@ private:
   std::array<u8, 16> header;
   std::vector<u8> prg_rom;
   std::vector<u8> chr_rom;
-  std::array<u8, 512> trainer;
-  uint8_t mapper_id;
+  std::optional<std::vector<u8>> prg_ram;
+  std::vector<u8> trainer;
+  uint16_t mapper_id;
+  bool is_nes2;
   bool mirroring_mode;
 
   std::size_t nes_loader(const char *ines_path, std::vector<u8> &rombuf);
